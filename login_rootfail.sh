@@ -1,6 +1,6 @@
 #/bin/bash
-horaactual=`date +%R --date='-1 hours'`
-mediahora=`date +%R`
+unahoramenos=`date +%R --date='-1 hours'`
+horaactual=`date +%R`
 lastb -s $horaactual -t $mediahora | grep root > /tmp/loginfailsroot.txt
 cantfail=`wc -l /tmp/loginfailsroot.txt > /tmp/cantfailroot.txt`
 contador=`awk '{print $1}' /tmp/cantfailroot.txt`
