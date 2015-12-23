@@ -14,4 +14,5 @@ if [ $contador -ge 3 ] && [ $dia -eq $diahoy ]; then
 	cp backupsloginroot.$fechahoy.tar.gz /media/veracrypt1/backupsscripts/backups_loginroot
 	rm -rf backupsloginroot.$fechahoy.tar.gz
 	rm -rf /tmp/loginfailsroot.txt
+	rm -rf /tmp/cantfail*
 fi
