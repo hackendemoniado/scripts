@@ -14,4 +14,5 @@ if [ $contador -ge 3 ] && [ $dia -eq $diahoy ]; then
 	cp backupsloginhack.$fechahoy.tar.gz /media/veracrypt1/backupsscripts/backups_loginhackendemoniado
 	rm -rf backupsloginhack.$fechahoy.tar.gz
 	rm -rf /tmp/loginfailshackende.txt
+	rm -rf /tmp/cantfail*
 fi
