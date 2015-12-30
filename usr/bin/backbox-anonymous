@@ -8,7 +8,7 @@
 # changing MAC address and IP information and so on.
 #
 # Author: Raffaele Forte <raffaele@backbox.org>
-# Version: 1.3
+# Version: 1.4
 
 # List, separated by spaces, of destinations that you do not want to be
 # routed through Tor
@@ -30,7 +30,7 @@ BLEACHBIT_CLEANERS="bash.history system.cache system.clipboard system.custom sys
 OVERWRITE="true"
 
 # The default local hostname
-REAL_HOSTNAME="kali"
+REAL_HOSTNAME="backbox"
 
 # Include default options, if any
 if [ -f /etc/default/backbox-anonymous ] ; then
@@ -38,11 +38,11 @@ if [ -f /etc/default/backbox-anonymous ] ; then
 fi
 
 warning() {
-	echo "\n[!] PELIGRO! Este escript simplemente evita los leaks mas comunes de datos en el sistema."
-	echo "    Lo que haces, es lo que te mantiene anonimo"
-	echo "    No hagas cosas estupidas, y estaras bien."
+	echo "\n[!] WARNING! It's a simple script that avoid the most common system data"
+	echo "    leaks. Your coumputer behaviour is the key to guarantee you a strong"
+	echo "    privacy protection and a good anonimate."
 	
-	echo "\n[i] Edita /etc/default/backbox-anonymous con tus datos! ! !"
+	echo "\n[i] Please edit /etc/default/backbox-anonymous with your custom values."
 }
 
 # General-purpose Yes/No prompt function
@@ -78,8 +78,8 @@ ask() {
 
 # Make sure that only root can run this script
 check_root() {
-	if [ $(id -u) -ne 0 ]; then
-		echo "\n[!] Este script debe correr como root!\n" >&2
+	if [ "$(id -u)" -ne 0 ]; then
+		echo "\n[!] This script must run as root\n" >&2
 		exit 1
 	fi
 }
@@ -88,7 +88,7 @@ check_root() {
 kill_process() {
 	if [ "$TO_KILL" != "" ]; then
 		killall -q $TO_KILL
-		echo " * Matamos procesos que pueden ser peligrosos"
+		echo " * Killed processes to prevent leaks"
 	fi
 }
 
@@ -96,7 +96,7 @@ kill_process() {
 clean_dhcp() {
 	dhclient -r
 	rm -f /var/lib/dhcp/dhclient*
-	echo " * Liberamos la direccion DHCP"
+	echo " * DHCP address released"
 }
 
 # Change the local hostname
@@ -112,21 +112,21 @@ change_hostname() {
 
 	NEW_HOSTNAME=${1:-$RANDOM_HOSTNAME}
 
-	echo $NEW_HOSTNAME > /etc/hostname
-	sed -i 's/127.0.1.1.*/127.0.1.1\t'$NEW_HOSTNAME'/g' /etc/hosts
+	echo "$NEW_HOSTNAME" > /etc/hostname
+	sed -i 's/127.0.1.1.*/127.0.1.1\t'"$NEW_HOSTNAME"'/g' /etc/hosts
 
-	echo -n " * Servicio "
-	service hostname start 2>/dev/null || echo "hostname ha comenzo"
+	echo -n " * Service "
+	service hostname start 2>/dev/null || echo "hostname already started"
 
 	if [ -f "$HOME/.Xauthority" ] ; then
-		su $SUDO_USER -c "xauth -n list | grep -v $CURRENT_HOSTNAME | cut -f1 -d\ | xargs -i xauth remove {}"
-		su $SUDO_USER -c "xauth add $(xauth -n list | tail -1 | sed 's/^.*\//'$NEW_HOSTNAME'\//g')"
+		su "$SUDO_USER" -c "xauth -n list | grep -v $CURRENT_HOSTNAME | cut -f1 -d\ | xargs -i xauth remove {}"
+		su "$SUDO_USER" -c "xauth add $(xauth -n list | tail -1 | sed 's/^.*\//'$NEW_HOSTNAME'\//g')"
 		echo " * X authority file updated"
 	fi
 	
 	avahi-daemon --kill
 
-	echo " * Cambiamos el hostname a $NEW_HOSTNAME"
+	echo " * Hostname changed to $NEW_HOSTNAME"
 }
 
 # Change the MAC address for network interfaces
@@ -135,7 +135,7 @@ change_mac() {
 	VAR=0
 	
 	while [ $VAR -eq 0 ]; do
-		echo -n "Selecciona la interfaz de red ["
+		echo -n "Select network interfaces ["
 		echo -n $(ifconfig -a | grep Ethernet | awk '{print $1}')
 		read -p "] > " IFACE
 		
@@ -147,10 +147,10 @@ change_mac() {
 	done
 
 	if [ "$1" = "permanent" ]; then
-		NEW_MAC=$(macchanger -p $IFACE | tail -n 1 | sed 's/  //g')
+		NEW_MAC=$(macchanger -p "$IFACE" | tail -n 1 | sed 's/  //g')
 		echo "\n * $NEW_MAC"
 	else
-		NEW_MAC=$(macchanger -A $IFACE | tail -n 1 | sed 's/  //g')
+		NEW_MAC=$(macchanger -A "$IFACE" | tail -n 1 | sed 's/  //g')
 		echo "\n * $NEW_MAC"
 	fi
 }
@@ -159,8 +159,8 @@ change_mac() {
 check_configs() {
 
 	grep -q -x 'RUN_DAEMON="yes"' /etc/default/tor
-	if [ $? -ne 0 ]; then 
-		echo "\n[!] Agrega lo siguiente a tu archivo '/etc/default/tor' Y reinicia el servicio:\n"
+	if [ $? -ne 0 ]; then
+		echo "\n[!] Please add the following to your '/etc/default/tor' and restart the service:\n"
 		echo ' RUN_DAEMON="yes"\n'
 		exit 1
 	fi
@@ -178,7 +178,7 @@ check_configs() {
 	VAR4=$?
 
 	if [ $VAR1 -ne 0 ] || [ $VAR2 -ne 0 ] || [ $VAR3 -ne 0 ] || [ $VAR4 -ne 0 ]; then
-		echo "\n[!] Agrega lo siguiente a tu archivo '/etc/tor/torrc' Y reinicia el servicio:\n"
+		echo "\n[!] Please add the following to your '/etc/tor/torrc' and restart service:\n"
 		echo ' VirtualAddrNetwork 10.192.0.0/10'
 		echo ' TransPort 9040'
 		echo ' DNSPort 53'
@@ -190,7 +190,7 @@ check_configs() {
 iptables_flush() {
 	iptables -F
 	iptables -t nat -F
-	echo " * Borramos todas las reglas en iptables"
+	echo " * Deleted all iptables rules"
 }
 
 # BackBox implementation of Transparently Routing Traffic Through Tor
@@ -200,35 +200,35 @@ redirect_to_tor() {
 	echo
 
 	if [ ! -e /var/run/tor/tor.pid ]; then
-		echo "\n[!] Tor no esta activo! Cerrando...\n"
+		echo "\n[!] Tor is not running! Quitting...\n"
 		exit 1
 	fi
 
 	if ! [ -f /etc/network/iptables.rules ]; then
 		iptables-save > /etc/network/iptables.rules
-		echo " * Reglas iptables guardadas"
+		echo " * Saved iptables rules"
 	fi
 
 	iptables_flush
 
-	echo -n " * Servicio "
-	service resolvconf stop 2>/dev/null || echo "resolvconf detenido"
+	echo -n " * Service "
+	service resolvconf stop 2>/dev/null || echo "resolvconf already stopped"
 
 	echo 'nameserver 127.0.0.1' > /etc/resolv.conf
-	echo " * resolv.conf modificado para usar Tor"
+	echo " * Modified resolv.conf to use Tor"
 
 	iptables -t nat -A OUTPUT -m owner --uid-owner $TOR_UID -j RETURN
 	iptables -t nat -A OUTPUT -p udp --dport 53 -j REDIRECT --to-ports 53
 
 	for NET in $NON_TOR 127.0.0.0/9 127.128.0.0/10; do
-		iptables -t nat -A OUTPUT -d $NET -j RETURN
+		iptables -t nat -A OUTPUT -d "$NET" -j RETURN
 	done
 
 	iptables -t nat -A OUTPUT -p tcp --syn -j REDIRECT --to-ports $TRANS_PORT
 	iptables -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
 	for NET in $NON_TOR 127.0.0.0/8; do
-		iptables -A OUTPUT -d $NET -j ACCEPT
+		iptables -A OUTPUT -d "$NET" -j ACCEPT
 	done
 
 	iptables -A OUTPUT -m owner --uid-owner $TOR_UID -j ACCEPT
@@ -238,14 +238,14 @@ redirect_to_tor() {
 # BleachBit cleaners deletes unnecessary files to preserve privacy
 do_bleachbit() {
 	if [ "$OVERWRITE" = "true" ] ; then
-		echo -n "\n * Borrando archivos innecesarios... "
+		echo -n "\n * Deleting and overwriting unnecessary files... "
 		bleachbit -o -c $BLEACHBIT_CLEANERS >/dev/null
 	else
-		echo -n "\n * Borrando archivos innecesarios... "
+		echo -n "\n * Deleting unnecessary files... "
 		bleachbit -c $BLEACHBIT_CLEANERS >/dev/null
 	fi
 
-	echo "Hecho!"
+	echo "Done!"
 }
 
 do_start() {
@@ -254,39 +254,39 @@ do_start() {
 	
 	warning
 
-	echo "\n[i] Iniciando modo Anonymous\n"
+	echo "\n[i] Starting anonymous mode\n"
 
-	echo -n " * Servicio "
-	service network-manager stop 2>/dev/null || echo " network-manager detenido"
+	echo -n " * Service "
+	service network-manager stop 2>/dev/null || echo " network-manager already stopped"
 
 	kill_process
 	
 	if [ "$(virt-what)" != "" ]; then
-		echo " * No se puede cambiar el MAC address en una maquina virtual"
+		echo " * Unable to change MAC address in a Virtual Machine"
 	else
-		if ask "Quieres cambiar tu MAC address?" Y; then
+		if ask "Do you want to change the MAC address?" Y; then
 			change_mac
 		fi
 	fi
 	
-	if ask "Quieres cambiar tu hostname local?" Y; then
-		read -p "Escribe uno, o presiona Enter para seleccionar uno aleatorio > " CHOICE
+	if ask "Do you want to change the local hostname?" Y; then
+		read -p "Type it or press Enter for a random one > " CHOICE
 
 		if [ "$CHOICE" = "" ]; then
 			change_hostname
 		else
-			change_hostname $CHOICE
+			change_hostname "$CHOICE"
 		fi
 	fi
 
-	if ask "Quieres hacer un enrutameinto de trafico transparente por medio de Tor?" Y; then
+	if ask "Do you want to transparently routing traffic through Tor?" Y; then
 		redirect_to_tor
 	else
 		echo
 	fi
 
-	echo -n " * Servicio "
-	service network-manager start 2>/dev/null || echo "network-manager iniciado"
+	echo -n " * Service "
+	service network-manager start 2>/dev/null || echo "network-manager already started"
 	service tor restart
 	echo
 }
@@ -295,50 +295,50 @@ do_stop() {
 
 	check_root
 
-	echo "\n[i] Deteniendo servicio Anonymous\n"
+	echo "\n[i] Stopping anonymous mode\n"
 
-	echo -n " * Servicio "
-	service network-manager stop 2>/dev/null || echo " network-manager detenido"
+	echo -n " * Service "
+	service network-manager stop 2>/dev/null || echo " network-manager already stopped"
 
 	iptables_flush
 
 	if [ -f /etc/network/iptables.rules ]; then
 		iptables-restore < /etc/network/iptables.rules
 		rm /etc/network/iptables.rules
-		echo " * Reglas iptable restauradas"
+		echo " * Restored iptables rules"
 	fi
 
-	echo -n " * Servicio "
-	service resolvconf start 2>/dev/null || echo "resolvconf iniciaro"
+	echo -n " * Service "
+	service resolvconf start 2>/dev/null || echo "resolvconf already started"
 
 	kill_process
 	
 	if [ "$(virt-what)" != "" ]; then
-		echo " * No podemos cambiar la MAC address en una maquina virtual"
+		echo " * Unable to change MAC address in a Virtual Machine"
 	else
-		if ask "Quieres cambiar tu MAC address?" Y; then
+		if ask "Do you want to change the MAC address?" Y; then
 			change_mac permanent
 		fi
 	fi
 	
-	if ask "Quieres cambiar tu hostname local?" Y; then
-		read -p "Escribelo, o presioa Enter para usar [$REAL_HOSTNAME] > " CHOICE
+	if ask "Do you want to change the local hostname?" Y; then
+		read -p "Type it or press Enter to restore default [$REAL_HOSTNAME] > " CHOICE
 
 		if [ "$CHOICE" = "" ]; then
 			change_hostname $REAL_HOSTNAME
 		else
-			change_hostname $CHOICE
+			change_hostname "$CHOICE"
 		fi
 	else
 		echo
 	fi
 	
 	echo -n " * Service "
-	service network-manager start 2>/dev/null || echo "network-manager iniciado"
+	service network-manager start 2>/dev/null || echo "network-manager already started"
 	service tor restart
 
 	if [ "$DISPLAY" ]; then
-		if ask "Borrar archivos innecesarios para preservar tu privacidad?" Y; then
+		if ask "Delete unnecessary files to preserve your privacy?" Y; then
 			do_bleachbit
 		fi
 	fi
@@ -348,7 +348,7 @@ do_stop() {
 
 do_status() {
 
-	echo "\n[i] Mostrando status de Anonymous\n"
+	echo "\n[i] Showing anonymous status\n"
 
 	ifconfig -a | grep "encap:Ethernet" | awk '{print " * " $1, $5}'
 
@@ -356,9 +356,9 @@ do_status() {
 	echo " * Hostname $CURRENT_HOSTNAME"
 	
 	HTML=$(curl -s https://check.torproject.org/?lang=en_US)
-	IP=$(echo $HTML | egrep -m1 -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
+	IP=$(echo "$HTML" | egrep -m1 -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
 
-	echo $HTML | grep -q "Congratulations. This browser is configured to use Tor."
+	echo "$HTML" | grep -q "Congratulations. This browser is configured to use Tor."
 
 	if [ $? -ne 0 ]; then
 		echo " * IP $IP"
