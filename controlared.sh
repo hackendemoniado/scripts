@@ -13,6 +13,7 @@ ruta=$HOME/controlared/
 if [ ! -d $ruta ]; then
 echo "creando la carpeta controlared en el direcotrio home "
 mkdir $ruta
+#para ver si existe el archivo
 if [ -f $ruta/listablanca.txt ];
 then
 echo "Sí, ya existe el archivo de host permitidos"
@@ -24,11 +25,19 @@ cat $ruta/listablanca.txt
 fi
 fi
 echo "path: " $ruta
+#esto debemos de ejecutarlo para probar el script y cuando sepamos bien que segmentos a analizar
+#debemos de comentar estas lineas y descomentar el nmap comentado de más abajo
+########............................................########################
+
 echo "Para empezar ingrese el o los segmentos de ip a analizar:"
 read ips
 #Lanzo nmap en mi red, deben modificar por el segmento correspondiente a su red #sed '1,4d'
 echo "Ejecutando nmap en la red: "$ips
 nmap -sP $ips > $ruta/controlred.txt
+
+#si leen bien es simple solamente comenten las 4 líneas de atras y descomenten la siguiente
+#poniendo su segmento de red
+#nmap -sP 192.168.100.1-255 --exclude 192.168.100.4 > $ruta/controlred.txt
 #busco el MAC de los hosts conectados
 echo "creando los archivos pertinentes"
 cat $ruta/controlred.txt | grep Address | cut -c 14-31 | tr -d "()" > $ruta/host.txt
