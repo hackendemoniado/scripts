@@ -13,6 +13,16 @@ ruta=$HOME/controlared/
 if [ ! -d $ruta ]; then
 echo "creando la carpeta controlared en el direcotrio home "
 mkdir $ruta
+if [ -f $ruta/listablanca.txt ];
+then
+echo "Sí, ya existe el archivo de host permitidos"
+else
+echo "No, no existe el archivo de host permitidos"
+echo "creando listablanca.txt....."
+echo "00:00:00:00:00:00" >$ruta/listablanca.txt
+cat $ruta/listablanca.txt
+fi
+
 fi
 echo "path: " $ruta
 echo "Para empezar ingrese el o los segmentos de ip a analizar:"
