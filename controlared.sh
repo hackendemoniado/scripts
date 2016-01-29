@@ -22,7 +22,6 @@ echo "creando listablanca.txt....."
 echo "00:00:00:00:00:00" >$ruta/listablanca.txt
 cat $ruta/listablanca.txt
 fi
-
 fi
 echo "path: " $ruta
 echo "Para empezar ingrese el o los segmentos de ip a analizar:"
