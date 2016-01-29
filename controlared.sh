@@ -70,8 +70,8 @@ done
 #Acá pregunto si la bandera es igual a uno pues significa que hay intruso
 if [ $bandera == 1 ];then
 #mando el mail con el archivo adjunto con la información extraida de los mismos
-echo "Se conecto algún/os intruso/s en la red" #| mutt -s "ACCESO A LA RED" -a $ruta/infointruso.txt -- sergiosysforence@hotmail.com.ar
+echo "Se conecto algún/os intruso/s en la red" | mutt -s "ACCESO A LA RED" -a $ruta/infointruso.txt -- sergiosysforence@hotmail.com.ar
 #borro el archivo con la info para que la proxima ves no se siga agregando info repetida
-#rm -rf $ruta/infointruso.txt
+rm -rf $ruta/infointruso.txt
 fi
 echo ---------Fin del script-------------
