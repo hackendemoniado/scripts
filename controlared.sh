@@ -8,7 +8,7 @@
 
 
 #creamos la ruta para guardar los txt necesarios para que trabaje el script
-ruta=$HOME/controlared/
+ruta=$HOME/controlared
 #es un simple if para saber si existe o no la carpeta
 if [ ! -d $ruta ]; then
 echo "creando la carpeta controlared en el direcotrio home "
